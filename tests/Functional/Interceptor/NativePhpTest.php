@@ -13,15 +13,12 @@ namespace TYPO3\PharStreamWrapper\Tests\Functional\Interceptor;
  */
 
 use TYPO3\PharStreamWrapper\Helper;
-use TYPO3\PharStreamWrapper\Interceptor\PharMetaDataInterceptor;
-use TYPO3\PharStreamWrapper\Manager;
 use TYPO3\PharStreamWrapper\Phar\Reader;
-use TYPO3\PharStreamWrapper\PharStreamWrapper;
 
 /**
- * @requires PHP <8.0
+ * @requires PHP 8.0
  */
-class PharMetaDataInterceptorTest extends AbstractTestCase
+class NativePhpTest extends AbstractTestCase
 {
     /**
      * @var string[]
@@ -53,13 +50,16 @@ class PharMetaDataInterceptorTest extends AbstractTestCase
         __DIR__ . '/../Fixtures/compromised.phar.png',
         __DIR__ . '/../Fixtures/compromised.phar.gz.png',
         __DIR__ . '/../Fixtures/compromised.phar.bz2.png',
+    ];
+
+    protected $invalidPaths = [
         __DIR__ . '/../Fixtures/compromised.phar/../bundle.phar',
     ];
 
     /**
-     * @var int
+     * @var int|null
      */
-    const EXPECTED_EXCEPTION_CODE = 1539632368;
+    const EXPECTED_EXCEPTION_CODE = null;
 
     protected function setUp()
     {
@@ -68,21 +68,6 @@ class PharMetaDataInterceptorTest extends AbstractTestCase
         if (!in_array('phar', stream_get_wrappers())) {
             $this->markTestSkipped('Phar stream wrapper is not registered');
         }
-
-        stream_wrapper_unregister('phar');
-        stream_wrapper_register('phar', PharStreamWrapper::class);
-
-        Manager::initialize(
-            (new \TYPO3\PharStreamWrapper\Behavior())
-                ->withAssertion(new PharMetaDataInterceptor())
-        );
-    }
-
-    protected function tearDown()
-    {
-        stream_wrapper_restore('phar');
-        Manager::destroy();
-        parent::tearDown();
     }
 
     /**

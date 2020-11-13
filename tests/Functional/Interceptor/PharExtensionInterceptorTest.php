@@ -18,6 +18,9 @@ use TYPO3\PharStreamWrapper\Manager;
 use TYPO3\PharStreamWrapper\Phar\Reader;
 use TYPO3\PharStreamWrapper\PharStreamWrapper;
 
+/**
+ * @requires PHP <8.0
+ */
 class PharExtensionInterceptorTest extends AbstractTestCase
 {
     /**

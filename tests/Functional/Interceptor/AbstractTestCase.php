@@ -35,7 +35,7 @@ abstract class AbstractTestCase extends TestCase
     protected $deniedPaths = [];
 
     /**
-     * @var int
+     * @var int|null
      */
     const EXPECTED_EXCEPTION_CODE = 0;
 
@@ -126,8 +126,10 @@ abstract class AbstractTestCase extends TestCase
             static::assertInstanceOf(Warning::class, $throwable);
         }
 
-        self::expectException(Exception::class);
-        self::expectExceptionCode(static::EXPECTED_EXCEPTION_CODE);
+        if (static::EXPECTED_EXCEPTION_CODE !== null) {
+            $this->expectException(Exception::class);
+            $this->expectExceptionCode(static::EXPECTED_EXCEPTION_CODE);
+        }
         file_exists('phar://' . $this->deniedPaths[0]);
     }
 
@@ -148,8 +150,10 @@ abstract class AbstractTestCase extends TestCase
             static::assertSame(1539618987, $throwable->getCode());
         }
 
-        self::expectException(Exception::class);
-        self::expectExceptionCode(static::EXPECTED_EXCEPTION_CODE);
+        if (static::EXPECTED_EXCEPTION_CODE !== null) {
+            $this->expectException(Exception::class);
+            $this->expectExceptionCode(static::EXPECTED_EXCEPTION_CODE);
+        }
         file_exists('phar://' . $this->deniedPaths[0]);
     }
 
@@ -219,9 +223,14 @@ abstract class AbstractTestCase extends TestCase
      */
     public function directoryActionDeniesInvocation(string $path)
     {
-        self::expectException(Exception::class);
-        self::expectExceptionCode(static::EXPECTED_EXCEPTION_CODE);
-        opendir('phar://' . $path);
+        if (static::EXPECTED_EXCEPTION_CODE !== null) {
+            $this->expectException(Exception::class);
+            $this->expectExceptionCode(static::EXPECTED_EXCEPTION_CODE);
+        }
+        $resource = opendir('phar://' . $path);
+        if (static::EXPECTED_EXCEPTION_CODE === null) {
+            self::assertIsResource($resource);
+        }
     }
 
     /**
@@ -356,11 +365,16 @@ abstract class AbstractTestCase extends TestCase
      * @test
      * @dataProvider urlStatDeniesInvocationDataProvider
      */
-    public function urlStatDeniesInvocation(string $functionName, string $path)
+    public function urlStatDeniesInvocation(string $functionName, string $path, $expectation)
     {
-        self::expectException(Exception::class);
-        self::expectExceptionCode(static::EXPECTED_EXCEPTION_CODE);
-        call_user_func($functionName, 'phar://' . $path);
+        if (static::EXPECTED_EXCEPTION_CODE !== null) {
+            $this->expectException(Exception::class);
+            $this->expectExceptionCode(static::EXPECTED_EXCEPTION_CODE);
+        }
+        $actual = call_user_func($functionName, 'phar://' . $path);
+        if (static::EXPECTED_EXCEPTION_CODE === null) {
+            self::assertSame($expectation, $actual);
+        }
     }
 
     /**
@@ -463,9 +477,14 @@ abstract class AbstractTestCase extends TestCase
      */
     public function streamOpenDeniesInvocationForFileOpen(string $deniedPath)
     {
-        self::expectException(Exception::class);
-        self::expectExceptionCode(static::EXPECTED_EXCEPTION_CODE);
-        fopen('phar://' . $deniedPath . '/Resources/content.txt', 'r');
+        if (static::EXPECTED_EXCEPTION_CODE !== null) {
+            $this->expectException(Exception::class);
+            $this->expectExceptionCode(static::EXPECTED_EXCEPTION_CODE);
+        }
+        $resource = fopen('phar://' . $deniedPath . '/Resources/content.txt', 'r');
+        if (static::EXPECTED_EXCEPTION_CODE === null) {
+            self::assertIsResource($resource);
+        }
     }
 
     /**
@@ -476,9 +495,14 @@ abstract class AbstractTestCase extends TestCase
      */
     public function streamOpenDeniesInvocationForFileGetContents(string $deniedPath)
     {
-        self::expectException(Exception::class);
-        self::expectExceptionCode(static::EXPECTED_EXCEPTION_CODE);
-        file_get_contents('phar://' . $deniedPath . '/Resources/content.txt');
+        if (static::EXPECTED_EXCEPTION_CODE !== null) {
+            $this->expectException(Exception::class);
+            $this->expectExceptionCode(static::EXPECTED_EXCEPTION_CODE);
+        }
+        $contents = file_get_contents('phar://' . $deniedPath . '/Resources/content.txt');
+        if (static::EXPECTED_EXCEPTION_CODE === null) {
+            self::assertSame(21, strlen($contents));
+        }
     }
 
     /**
@@ -489,9 +513,16 @@ abstract class AbstractTestCase extends TestCase
      */
     public function streamOpenDeniesInvocationForInclude(string $deniedPath)
     {
-        self::expectException(Exception::class);
-        self::expectExceptionCode(static::EXPECTED_EXCEPTION_CODE);
+        if (static::EXPECTED_EXCEPTION_CODE !== null) {
+            $this->expectException(Exception::class);
+            $this->expectExceptionCode(static::EXPECTED_EXCEPTION_CODE);
+        }
         include('phar://' . $deniedPath . '/Classes/Domain/Model/DemoModel.php');
+        if (static::EXPECTED_EXCEPTION_CODE === null) {
+            self::assertTrue(
+                class_exists(\TYPO3Demo\Demo\Domain\Model\DemoModel::class, false)
+            );
+        }
     }
 
     /**
